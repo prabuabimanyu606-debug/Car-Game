@@ -1,0 +1,2890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<title>Street Chase</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    user-select:none;
+    -webkit-user-select:none;
+    touch-action:auto;
+}
+
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#080a0d;
+    font-family:Arial,sans-serif;
+}
+
+#game{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+    z-index:0;
+}
+
+/* =========================
+   SCREENS
+========================= */
+
+.screen{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(#0008,#000e);
+    touch-action:auto;
+}
+
+.menu{
+    position:relative;
+    width:min(92vw,500px);
+    max-height:90vh;
+
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    touch-action:pan-y;
+
+    padding:25px;
+    padding-bottom:90px;
+
+    background:#181818;
+    color:white;
+
+    border:2px solid #666;
+    border-radius:25px;
+
+    box-shadow:
+        0 0 30px #000,
+        inset 0 0 20px #000;
+}
+
+.title{
+    text-align:center;
+    font-size:40px;
+    font-weight:900;
+    color:#ff4c36;
+    text-shadow:
+        0 0 10px #ff2d16,
+        0 0 25px #ff2d16;
+}
+
+.subtitle{
+    text-align:center;
+    color:#aaa;
+    margin:8px 0 20px;
+}
+
+.coins{
+    text-align:center;
+    color:#ffd23c;
+    font-size:24px;
+    font-weight:bold;
+    margin:15px;
+}
+
+.menuBtn{
+    display:block;
+    width:100%;
+    padding:14px;
+    margin:8px 0;
+
+    border:0;
+    border-radius:14px;
+
+    background:#286bd9;
+    color:white;
+
+    font-size:18px;
+    font-weight:bold;
+}
+
+.menuBtn:active{
+    transform:scale(.96);
+}
+
+.green{
+    background:#279b4b;
+}
+
+.orange{
+    background:#d47a18;
+}
+
+.red{
+    background:#b63232;
+}
+
+.back{
+    background:#555;
+}
+
+/* =========================
+   GARAGE
+========================= */
+
+#shopScreen .menu{
+    padding-bottom:95px;
+}
+
+#shopScreen #shopBack{
+    position:absolute;
+    left:24px;
+    right:24px;
+    bottom:18px;
+
+    width:calc(100% - 48px);
+    margin:0;
+
+    z-index:50;
+
+    background:#555;
+    border:2px solid #888;
+
+    box-shadow:
+        0 4px 15px #000;
+}
+
+.shopGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.carCard{
+    background:#252525;
+    border:1px solid #555;
+    border-radius:15px;
+    padding:10px;
+    text-align:center;
+}
+
+.carPreview{
+    height:75px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.miniCar{
+    width:42px;
+    height:68px;
+    border-radius:10px;
+    border:3px solid #111;
+}
+
+.price{
+    color:#ffd23c;
+    margin:5px;
+}
+
+.upgrade{
+    background:#303030;
+    border-radius:14px;
+    padding:12px;
+    margin:10px 0;
+}
+
+/* =========================
+   HUD
+========================= */
+
+#hud{
+    position:fixed;
+    left:10px;
+    top:10px;
+    z-index:20;
+
+    color:white;
+
+    font-weight:bold;
+    font-size:18px;
+    line-height:24px;
+
+    text-shadow:2px 2px 4px #000;
+
+    touch-action:none;
+}
+
+#hpbar{
+    width:210px;
+    height:17px;
+
+    border:2px solid white;
+    background:#222;
+
+    margin-top:3px;
+}
+
+#hpfill{
+    height:100%;
+    width:100%;
+    background:#35c759;
+}
+
+#policeHud{
+    display:none;
+    color:#ff3030;
+}
+
+#hint{
+    position:fixed;
+    right:10px;
+    top:10px;
+
+    z-index:20;
+
+    color:white;
+    text-align:right;
+    font-size:12px;
+
+    text-shadow:1px 1px 4px #000;
+
+    touch-action:none;
+}
+
+/* =========================
+   CONTROLS
+========================= */
+
+#controls{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:15px;
+
+    height:100px;
+
+    z-index:30;
+
+    touch-action:none;
+}
+
+.ctrl{
+    position:absolute;
+
+    width:90px;
+    height:90px;
+
+    border:3px solid #aaa;
+    border-radius:22px;
+
+    color:white;
+    background:#222c;
+
+    font-size:14px;
+    font-weight:bold;
+
+    touch-action:none;
+}
+
+.ctrl:active{
+    transform:scale(.94);
+}
+
+#left{
+    left:18px;
+}
+
+#right{
+    left:120px;
+}
+
+#brake{
+    right:120px;
+    background:#9d2222;
+}
+
+#gas{
+    right:18px;
+    background:#176a37;
+}
+
+/* =========================
+   GAME OVER
+========================= */
+
+#gameover{
+    display:none;
+
+    position:fixed;
+    inset:0;
+
+    z-index:200;
+
+    background:#000d;
+
+    align-items:center;
+    justify-content:center;
+
+    touch-action:auto;
+}
+
+#gameover.show{
+    display:flex;
+}
+
+.gameOverCard{
+    width:min(90vw,400px);
+
+    background:#181818;
+    color:white;
+
+    padding:28px;
+
+    border:2px solid white;
+    border-radius:20px;
+
+    text-align:center;
+}
+
+.gameOverCard h1{
+    color:#ff492f;
+    font-size:38px;
+    margin:0 0 10px;
+
+    text-shadow:0 0 15px red;
+}
+
+/* =========================
+   DAILY SPIN
+========================= */
+
+#wheel{
+    text-align:center;
+    font-size:75px;
+    margin:20px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:500px){
+
+    .menu{
+        width:94vw;
+        max-height:88vh;
+        padding:18px;
+        padding-bottom:90px;
+
+        overflow-y:auto;
+        overflow-x:hidden;
+        -webkit-overflow-scrolling:touch;
+        touch-action:pan-y;
+    }
+
+    .title{
+        font-size:34px;
+    }
+
+    .shopGrid{
+        gap:7px;
+    }
+
+    .carCard{
+        padding:8px;
+    }
+
+    .carCard .menuBtn{
+        font-size:15px;
+    }
+
+}
+
+/* =========================
+   SCROLL FIX
+========================= */
+
+#mainMenu .menu,
+#shopScreen .menu,
+#spinScreen .menu{
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    touch-action:pan-y;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+
+<!-- =========================
+     MAIN MENU
+========================= -->
+
+<div id="mainMenu" class="screen">
+
+    <div class="menu">
+
+        <div class="title">
+            STREET CHASE
+        </div>
+
+        <div class="subtitle">
+            Drive • Escape • Collect • Upgrade
+        </div>
+
+        <div class="coins">
+            🪙 <span id="menuCoins">0</span>
+        </div>
+
+        <button
+            class="menuBtn green"
+            id="startBtn">
+            START GAME
+        </button>
+
+        <button
+            class="menuBtn"
+            id="shopBtn">
+            SHOP / GARAGE
+        </button>
+
+        <button
+            class="menuBtn orange"
+            id="spinBtnMenu">
+            🎁 DAILY SPIN
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     SHOP
+========================= -->
+
+<div
+    id="shopScreen"
+    class="screen"
+    style="display:none">
+
+    <div class="menu">
+
+        <div class="title">
+            GARAGE
+        </div>
+
+        <div class="coins">
+            🪙 <span id="shopCoins">0</span>
+        </div>
+
+        <div
+            id="carShop"
+            class="shopGrid">
+        </div>
+
+        <hr>
+
+        <h2 style="text-align:center">
+            UPGRADES
+        </h2>
+
+        <div id="upgradePanel"></div>
+
+        <button
+            class="menuBtn back"
+            id="shopBack">
+            BACK
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     DAILY SPIN
+========================= -->
+
+<div
+    id="spinScreen"
+    class="screen"
+    style="display:none">
+
+    <div class="menu">
+
+        <div class="title">
+            DAILY SPIN
+        </div>
+
+        <p style="text-align:center">
+            One free spin every day.
+        </p>
+
+        <div id="wheel">
+            🎡
+        </div>
+
+        <div
+            id="spinResult"
+            style="text-align:center">
+            Ready?
+        </div>
+
+        <button
+            class="menuBtn orange"
+            id="doSpin">
+            SPIN FREE
+        </button>
+
+        <button
+            class="menuBtn back"
+            id="spinBack">
+            BACK
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     HUD
+========================= -->
+
+<div
+    id="hud"
+    style="display:none">
+
+    SPEED:
+    <span id="speed">0</span> km/h
+
+    <br>
+
+    DISTANCE:
+    <span id="distance">0</span> m
+
+    <br>
+
+    🪙 <span id="coinHud">0</span>
+
+    <br>
+
+    HP:
+    <span id="hpText">100</span>
+
+    <div id="hpbar">
+        <div id="hpfill"></div>
+    </div>
+
+    <div id="policeHud">
+        🚨 POLICE CHASING
+    </div>
+
+</div>
+
+
+<div
+    id="hint"
+    style="display:none">
+
+    HOLD GAS<br>
+    LEFT / RIGHT TO STEER
+
+</div>
+
+
+<!-- =========================
+     CONTROLS
+========================= -->
+
+<div
+    id="controls"
+    style="display:none">
+
+    <button
+        class="ctrl"
+        id="left">
+
+        ◀<br>
+        STEER
+
+    </button>
+
+    <button
+        class="ctrl"
+        id="right">
+
+        ▶<br>
+        STEER
+
+    </button>
+
+    <button
+        class="ctrl"
+        id="brake">
+
+        BRAKE
+
+    </button>
+
+    <button
+        class="ctrl"
+        id="gas">
+
+        GAS ▲
+
+    </button>
+
+</div>
+
+
+<!-- =========================
+     GAME OVER
+========================= -->
+
+<div id="gameover">
+
+    <div class="gameOverCard">
+
+        <h1 id="gameOverTitle">
+            GAME OVER
+        </h1>
+
+        <p id="gameOverMessage">
+            Your car was destroyed!
+        </p>
+
+        <p>
+            Distance:
+            <span id="finalDistance">0</span> m
+        </p>
+
+        <button
+            class="menuBtn green"
+            id="retry">
+
+            RETRY
+
+        </button>
+
+        <button
+            class="menuBtn back"
+            id="menuFromGameOver">
+
+            MENU
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+"use strict";
+
+
+/* =========================
+   ELEMENT HELPER
+========================= */
+
+function $(id){
+    return document.getElementById(id);
+}
+
+
+/* =========================
+   CANVAS
+========================= */
+
+const canvas=$("game");
+const ctx=canvas.getContext("2d");
+
+let W=window.innerWidth;
+let H=window.innerHeight;
+let DPR=1;
+
+function resize(){
+
+    W=window.innerWidth;
+    H=window.innerHeight;
+
+    DPR=Math.min(
+        window.devicePixelRatio || 1,
+        2
+    );
+
+    canvas.width=
+        Math.floor(W*DPR);
+
+    canvas.height=
+        Math.floor(H*DPR);
+
+    canvas.style.width=
+        W+"px";
+
+    canvas.style.height=
+        H+"px";
+
+    ctx.setTransform(
+        DPR,0,0,DPR,0,0
+    );
+}
+
+window.addEventListener(
+    "resize",
+    resize
+);
+
+resize();
+
+
+/* =========================
+   SAVE DATA
+========================= */
+
+const defaultSave={
+    coins:500,
+
+    ownedCars:[
+        "starter"
+    ],
+
+    selectedCar:
+        "starter",
+
+    upgrades:{
+        starter:{
+            engine:0,
+            handling:0,
+            hp:0
+        }
+    },
+
+    lastSpin:""
+};
+
+let save;
+
+try{
+
+    const raw=
+        localStorage.getItem(
+            "streetChaseSave"
+        );
+
+    if(raw){
+
+        save=
+            JSON.parse(raw);
+
+    }else{
+
+        save=
+            JSON.parse(
+                JSON.stringify(
+                    defaultSave
+                )
+            );
+    }
+
+}catch(e){
+
+    save=
+        JSON.parse(
+            JSON.stringify(
+                defaultSave
+            )
+        );
+}
+
+
+function saveGame(){
+
+    try{
+
+        localStorage.setItem(
+            "streetChaseSave",
+            JSON.stringify(save)
+        );
+
+    }catch(e){
+
+        console.log(
+            "Save error:",
+            e
+        );
+    }
+}
+
+
+/* =========================
+   CAR DATABASE
+========================= */
+
+const cars={
+
+    starter:{
+        name:"Street Rookie",
+        price:0,
+        color:"#1684ed",
+        speed:180,
+        hp:100
+    },
+
+    sport:{
+        name:"Street Sport",
+        price:1000,
+        color:"#e53935",
+        speed:220,
+        hp:110
+    },
+
+    muscle:{
+        name:"Muscle V8",
+        price:2500,
+        color:"#ff9f0a",
+        speed:250,
+        hp:140
+    },
+
+    super:{
+        name:"Super GT",
+        price:5000,
+        color:"#9c27b0",
+        speed:285,
+        hp:120
+    }
+
+};
+
+
+/* =========================
+   FIX SAVE DATA
+========================= */
+
+if(!Array.isArray(save.ownedCars))
+    save.ownedCars=["starter"];
+
+if(!save.ownedCars.includes("starter"))
+    save.ownedCars.push("starter");
+
+if(!cars[save.selectedCar])
+    save.selectedCar="starter";
+
+if(!save.upgrades)
+    save.upgrades={};
+
+for(const id of save.ownedCars){
+
+    if(!save.upgrades[id]){
+
+        save.upgrades[id]={
+            engine:0,
+            handling:0,
+            hp:0
+        };
+
+    }
+}
+
+if(typeof save.coins!=="number")
+    save.coins=500;
+
+saveGame();
+
+
+/* =========================
+   COINS
+========================= */
+
+function updateCoins(){
+
+    $("menuCoins").textContent=
+        Math.floor(save.coins);
+
+    $("shopCoins").textContent=
+        Math.floor(save.coins);
+
+    $("coinHud").textContent=
+        Math.floor(save.coins);
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+$("startBtn").onclick=
+    startGame;
+
+$("shopBtn").onclick=
+    openShop;
+
+$("spinBtnMenu").onclick=
+    openSpin;
+
+$("shopBack").onclick=
+    closeShop;
+
+$("spinBack").onclick=
+    closeSpin;
+
+$("retry").onclick=
+    retryGame;
+
+$("menuFromGameOver").onclick=
+    backToMenu;
+
+
+/* =========================
+   SHOP
+========================= */
+
+function openShop(){
+
+    $("mainMenu").style.display=
+        "none";
+
+    $("shopScreen").style.display=
+        "flex";
+
+    renderShop();
+}
+
+
+function closeShop(){
+
+    $("shopScreen").style.display=
+        "none";
+
+    $("mainMenu").style.display=
+        "flex";
+
+    updateCoins();
+}
+
+
+function renderShop(){
+
+    const container=
+        $("carShop");
+
+    container.innerHTML="";
+
+    for(const id in cars){
+
+        const car=cars[id];
+
+        const owned=
+            save.ownedCars
+                .includes(id);
+
+        const selected=
+            save.selectedCar===id;
+
+        const card=
+            document.createElement(
+                "div"
+            );
+
+        card.className=
+            "carCard";
+
+        card.innerHTML=`
+
+            <div class="carPreview">
+
+                <div
+                    class="miniCar"
+                    style="
+                        background:${car.color}
+                    ">
+                </div>
+
+            </div>
+
+            <b>${car.name}</b>
+
+            <br>
+
+            SPEED:
+            ${car.speed}
+
+            <br>
+
+            HP:
+            ${car.hp}
+
+            <br>
+
+            ${
+                owned
+                ? "OWNED"
+                : "🪙 "+car.price
+            }
+
+            <button
+                class="menuBtn
+                ${selected?"green":""}"
+                data-car="${id}">
+
+                ${
+                    selected
+                    ? "SELECTED"
+                    : owned
+                    ? "SELECT"
+                    : "BUY"
+                }
+
+            </button>
+        `;
+
+        card
+            .querySelector("button")
+            .onclick=function(){
+
+                buyOrSelect(id);
+
+            };
+
+        container.appendChild(card);
+    }
+
+    renderUpgrades();
+    updateCoins();
+}
+
+
+function buyOrSelect(id){
+
+    const car=cars[id];
+
+    if(save.ownedCars.includes(id)){
+
+        save.selectedCar=id;
+
+        saveGame();
+
+        renderShop();
+
+        return;
+    }
+
+    if(save.coins<car.price){
+
+        alert(
+            "Not enough coins!"
+        );
+
+        return;
+    }
+
+    save.coins-=car.price;
+
+    save.ownedCars.push(id);
+
+    save.selectedCar=id;
+
+    save.upgrades[id]={
+        engine:0,
+        handling:0,
+        hp:0
+    };
+
+    saveGame();
+
+    renderShop();
+}
+
+
+/* =========================
+   UPGRADES
+========================= */
+
+function renderUpgrades(){
+
+    const id=
+        save.selectedCar;
+
+    const u=
+        save.upgrades[id];
+
+    $("upgradePanel").innerHTML=`
+
+        <div class="upgrade">
+
+            <b>
+                ENGINE
+                LEVEL ${u.engine}/5
+            </b>
+
+            <br>
+
+            +15 max speed per level
+
+            <button
+                class="menuBtn"
+                id="engineUpgrade">
+
+                UPGRADE 🪙
+                ${500*(u.engine+1)}
+
+            </button>
+
+        </div>
+
+
+        <div class="upgrade">
+
+            <b>
+                HANDLING
+                LEVEL ${u.handling}/5
+            </b>
+
+            <br>
+
+            Better steering
+
+            <button
+                class="menuBtn"
+                id="handlingUpgrade">
+
+                UPGRADE 🪙
+                ${400*(u.handling+1)}
+
+            </button>
+
+        </div>
+
+
+        <div class="upgrade">
+
+            <b>
+                ARMOR
+                LEVEL ${u.hp}/5
+            </b>
+
+            <br>
+
+            +20 maximum HP
+
+            <button
+                class="menuBtn"
+                id="hpUpgrade">
+
+                UPGRADE 🪙
+                ${450*(u.hp+1)}
+
+            </button>
+
+        </div>
+    `;
+
+    $("engineUpgrade").onclick=
+        ()=>upgrade("engine");
+
+    $("handlingUpgrade").onclick=
+        ()=>upgrade("handling");
+
+    $("hpUpgrade").onclick=
+        ()=>upgrade("hp");
+}
+
+
+function upgrade(type){
+
+    const id=
+        save.selectedCar;
+
+    const u=
+        save.upgrades[id];
+
+    if(u[type]>=5){
+
+        alert(
+            "Maximum level!"
+        );
+
+        return;
+    }
+
+    let price;
+
+    if(type==="engine")
+        price=
+            500*(u.engine+1);
+
+    else if(type==="handling")
+        price=
+            400*(u.handling+1);
+
+    else
+        price=
+            450*(u.hp+1);
+
+    if(save.coins<price){
+
+        alert(
+            "Not enough coins!"
+        );
+
+        return;
+    }
+
+    save.coins-=price;
+
+    u[type]++;
+
+    saveGame();
+
+    renderShop();
+}
+
+
+/* =========================
+   DAILY SPIN
+========================= */
+
+function dayKey(){
+
+    const d=new Date();
+
+    return d.getFullYear()+
+        "-" +
+        (d.getMonth()+1)+
+        "-" +
+        d.getDate();
+}
+
+
+function openSpin(){
+
+    $("mainMenu").style.display=
+        "none";
+
+    $("spinScreen").style.display=
+        "flex";
+
+    checkSpin();
+}
+
+
+function closeSpin(){
+
+    $("spinScreen").style.display=
+        "none";
+
+    $("mainMenu").style.display=
+        "flex";
+}
+
+
+function checkSpin(){
+
+    const used=
+        save.lastSpin===dayKey();
+
+    $("doSpin").disabled=
+        used;
+
+    $("doSpin").textContent=
+        used
+        ? "COME BACK TOMORROW"
+        : "SPIN FREE";
+
+    $("spinResult").textContent=
+        used
+        ? "Already used today."
+        : "Ready?";
+}
+
+
+$("doSpin").onclick=
+    spinDaily;
+
+
+function spinDaily(){
+
+    if(save.lastSpin===dayKey())
+        return;
+
+    save.lastSpin=
+        dayKey();
+
+    const rewards=[
+        100,
+        200,
+        300,
+        500,
+        750,
+        1000
+    ];
+
+    const reward=
+        rewards[
+            Math.floor(
+                Math.random()*
+                rewards.length
+            )
+        ];
+
+    const wheel=
+        $("wheel");
+
+    wheel.style.transition=
+        "transform 2s";
+
+    wheel.style.transform=
+        "rotate(1440deg)";
+
+    setTimeout(function(){
+
+        save.coins+=reward;
+
+        saveGame();
+
+        $("spinResult").textContent=
+            "YOU WON 🪙 "+
+            reward+
+            " COINS!";
+
+        wheel.style.transform=
+            "rotate(0deg)";
+
+        updateCoins();
+
+        checkSpin();
+
+    },2000);
+}
+
+
+/* =========================
+   INPUT
+========================= */
+
+const input={
+    gas:false,
+    brake:false,
+    left:false,
+    right:false
+};
+
+
+function bindButton(
+    id,
+    key
+){
+
+    const button=
+        $(id);
+
+    button.addEventListener(
+        "pointerdown",
+        function(e){
+
+            e.preventDefault();
+
+            input[key]=true;
+
+            try{
+
+                button.setPointerCapture(
+                    e.pointerId
+                );
+
+            }catch(_){}
+
+        }
+    );
+
+    function release(e){
+
+        e.preventDefault();
+
+        input[key]=false;
+    }
+
+    button.addEventListener(
+        "pointerup",
+        release
+    );
+
+    button.addEventListener(
+        "pointercancel",
+        release
+    );
+
+    button.addEventListener(
+        "pointerleave",
+        release
+    );
+}
+
+
+bindButton(
+    "gas",
+    "gas"
+);
+
+bindButton(
+    "brake",
+    "brake"
+);
+
+bindButton(
+    "left",
+    "left"
+);
+
+bindButton(
+    "right",
+    "right"
+);
+
+
+/* =========================
+   GAME VARIABLES
+========================= */
+
+let speed=0;
+let distance=0;
+let roadScroll=0;
+let playerLane=1;
+
+let health=100;
+
+let gameRunning=false;
+
+let policeActive=false;
+let policeDistance=280;
+
+let traffic=[];
+let roadCoins=[];
+
+
+/* =========================
+   ROAD
+========================= */
+
+function getRoad(y){
+
+    const horizon=
+        H*.34;
+
+    let t=
+        (y-horizon)/
+        (H-horizon);
+
+    t=Math.max(
+        0,
+        Math.min(
+            1,
+            t
+        )
+    );
+
+    return{
+        left:
+            W*(.31-.29*t),
+
+        right:
+            W*(.69+.29*t)
+    };
+}
+
+
+function laneX(
+    y,
+    lane
+){
+
+    const r=
+        getRoad(y);
+
+    return r.left+
+        (lane+.5)*
+        (r.right-r.left)/3;
+}
+
+
+/* =========================
+   TRAFFIC
+========================= */
+
+function createTraffic(){
+
+    traffic=[];
+
+    for(let i=0;i<8;i++){
+
+        traffic.push({
+
+            lane:
+                Math.floor(
+                    Math.random()*3
+                ),
+
+            y:
+                -150-
+                i*250-
+                Math.random()*400,
+
+            speed:
+                .3+
+                Math.random()*.8,
+
+            color:[
+                "#e53935",
+                "#2878e8",
+                "#ffc107",
+                "#eee",
+                "#43a047"
+            ][i%5]
+
+        });
+    }
+}
+
+
+/* =========================
+   COINS
+========================= */
+
+function createCoins(){
+
+    roadCoins=[];
+
+    for(let i=0;i<25;i++){
+
+        roadCoins.push({
+
+            lane:
+                Math.floor(
+                    Math.random()*3
+                ),
+
+            y:
+                -100-
+                i*220-
+                Math.random()*300,
+
+            taken:false
+        });
+    }
+}
+
+
+/* =========================
+   START
+========================= */
+
+function startGame(){
+
+    $("mainMenu").style.display=
+        "none";
+
+    $("shopScreen").style.display=
+        "none";
+
+    $("spinScreen").style.display=
+        "none";
+
+    $("hud").style.display=
+        "block";
+
+    $("hint").style.display=
+        "block";
+
+    $("controls").style.display=
+        "block";
+
+    resetGame();
+
+    gameRunning=true;
+}
+
+
+function resetGame(){
+
+    const car=
+        cars[save.selectedCar];
+
+    const u=
+        save.upgrades[
+            save.selectedCar
+        ];
+
+    speed=0;
+
+    distance=0;
+
+    roadScroll=0;
+
+    playerLane=1;
+
+    health=
+        car.hp+
+        u.hp*20;
+
+    policeActive=false;
+
+    policeDistance=280;
+
+    createTraffic();
+
+    createCoins();
+
+    updateHealth();
+
+    updateCoins();
+
+    $("policeHud").style.display=
+        "none";
+
+    $("gameover")
+        .classList.remove(
+            "show"
+        );
+}
+
+
+/* =========================
+   HEALTH
+========================= */
+
+function updateHealth(){
+
+    const value=
+        Math.max(
+            0,
+            Math.round(health)
+        );
+
+    $("hpText").textContent=
+        value;
+
+    $("hpfill").style.width=
+        Math.max(
+            0,
+            health
+        )+"%";
+
+    $("hpfill").style.background=
+        health<50
+        ? "red"
+        : "#35c759";
+}
+
+
+function damage(amount){
+
+    if(!gameRunning)
+        return;
+
+    health-=amount;
+
+    if(health<0)
+        health=0;
+
+    updateHealth();
+
+    if(health<=0){
+
+        endGame(
+            "CAR DESTROYED",
+            "Your car was destroyed!"
+        );
+    }
+}
+
+
+/* =========================
+   POLICE
+========================= */
+
+function activatePolice(){
+
+    policeActive=true;
+
+    policeDistance=280;
+
+    $("policeHud").style.display=
+        "block";
+}
+
+
+function updatePolice(){
+
+    if(!policeActive)
+        return;
+
+    if(speed<70)
+        policeDistance-=2.2;
+    else
+        policeDistance+=.45;
+
+    policeDistance=
+        Math.max(
+            -10,
+            Math.min(
+                280,
+                policeDistance
+            )
+        );
+
+    if(policeDistance<=0){
+
+        endGame(
+            "ARRESTED!",
+            "The police caught you!"
+        );
+    }
+}
+
+
+/* =========================
+   UPDATE
+========================= */
+
+function update(){
+
+    if(!gameRunning)
+        return;
+
+
+    const car=
+        cars[save.selectedCar];
+
+    const u=
+        save.upgrades[
+            save.selectedCar
+        ];
+
+
+    /* SPEED */
+
+    if(input.gas){
+
+        speed+=
+            .8+
+            u.engine*.05;
+
+    }else{
+
+        speed-=.22;
+    }
+
+    if(input.brake)
+        speed-=1.5;
+
+
+    const maxSpeed=
+        car.speed+
+        u.engine*15;
+
+    speed=Math.max(
+        0,
+        Math.min(
+            maxSpeed,
+            speed
+        )
+    );
+
+
+    /* STEERING */
+
+    const steering=
+        .035+
+        u.handling*.008;
+
+    if(input.left)
+        playerLane-=steering;
+
+    if(input.right)
+        playerLane+=steering;
+
+    playerLane=
+        Math.max(
+            .05,
+            Math.min(
+                2.95,
+                playerLane
+            )
+        );
+
+
+    /* DISTANCE */
+
+    distance+=
+        speed/3600;
+
+    roadScroll+=
+        speed*.09;
+
+
+    /* POLICE AFTER 100M */
+
+    if(
+        distance>=100 &&
+        !policeActive
+    ){
+
+        activatePolice();
+    }
+
+    updatePolice();
+
+
+    /* PLAYER */
+
+    const playerY=
+        H*.76;
+
+    const playerX=
+        laneX(
+            playerY,
+            playerLane
+        );
+
+
+    /* TRAFFIC */
+
+    for(const c of traffic){
+
+        c.y+=
+            1.4+
+            speed*.035+
+            c.speed;
+
+        if(c.y>H+100){
+
+            c.y=
+                -200-
+                Math.random()*500;
+
+            c.lane=
+                Math.floor(
+                    Math.random()*3
+                );
+        }
+
+
+        if(c.y>H*.34-30){
+
+            const x=
+                laneX(
+                    c.y,
+                    c.lane
+                );
+
+            if(
+                Math.abs(
+                    x-playerX
+                )<38 &&
+
+                Math.abs(
+                    c.y-playerY
+                )<58
+            ){
+
+                damage(25);
+
+                speed*=.45;
+
+                c.y=-250;
+            }
+        }
+    }
+
+
+    /* COINS */
+
+    for(const coin of roadCoins){
+
+        if(coin.taken)
+            continue;
+
+        coin.y+=
+            1.4+
+            speed*.035;
+
+        if(coin.y>H+100){
+
+            coin.y=
+                -300-
+                Math.random()*500;
+
+            coin.lane=
+                Math.floor(
+                    Math.random()*3
+                );
+
+            coin.taken=false;
+        }
+
+        const x=
+            laneX(
+                coin.y,
+                coin.lane
+            );
+
+        if(
+            Math.abs(
+                x-playerX
+            )<32 &&
+
+            Math.abs(
+                coin.y-playerY
+            )<55
+        ){
+
+            coin.taken=true;
+
+            save.coins+=10;
+
+            saveGame();
+
+            updateCoins();
+        }
+    }
+
+
+    $("speed").textContent=
+        Math.round(speed);
+
+    $("distance").textContent=
+        Math.floor(distance);
+}
+
+
+/* =========================
+   DRAW CAR
+========================= */
+
+function drawCar(
+    x,
+    y,
+    w,
+    h,
+    color
+){
+
+    ctx.save();
+
+    ctx.translate(
+        x,
+        y
+    );
+
+
+    /* WHEELS */
+
+    ctx.fillStyle="#111";
+
+    ctx.fillRect(
+        -w*.58,
+        -h*.30,
+        w*.16,
+        h*.60
+    );
+
+    ctx.fillRect(
+        w*.42,
+        -h*.30,
+        w*.16,
+        h*.60
+    );
+
+
+    /* BODY */
+
+    ctx.fillStyle=color;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        -w/2+8,
+        -h/2
+    );
+
+    ctx.lineTo(
+        w/2-8,
+        -h/2
+    );
+
+    ctx.quadraticCurveTo(
+        w/2,
+        -h/2,
+        w/2,
+        -h/2+8
+    );
+
+    ctx.lineTo(
+        w/2,
+        h/2-8
+    );
+
+    ctx.quadraticCurveTo(
+        w/2,
+        h/2,
+        w/2-8,
+        h/2
+    );
+
+    ctx.lineTo(
+        -w/2+8,
+        h/2
+    );
+
+    ctx.quadraticCurveTo(
+        -w/2,
+        h/2,
+        -w/2,
+        h/2-8
+    );
+
+    ctx.lineTo(
+        -w/2,
+        -h/2+8
+    );
+
+    ctx.quadraticCurveTo(
+        -w/2,
+        -h/2,
+        -w/2+8,
+        -h/2
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /* WINDOWS */
+
+    ctx.fillStyle="#9edcff";
+
+    ctx.fillRect(
+        -w*.29,
+        -h*.34,
+        w*.58,
+        h*.22
+    );
+
+    ctx.fillStyle="#222";
+
+    ctx.fillRect(
+        -w*.29,
+        h*.04,
+        w*.58,
+        h*.18
+    );
+
+
+    /* LIGHTS */
+
+    ctx.fillStyle="#fff3a0";
+
+    ctx.fillRect(
+        -w*.39,
+        -h*.48,
+        8,
+        5
+    );
+
+    ctx.fillRect(
+        w*.31,
+        -h*.48,
+        8,
+        5
+    );
+
+    ctx.restore();
+}
+
+
+/* =========================
+   SMOKE
+========================= */
+
+function drawSmoke(
+    x,
+    y
+){
+
+    const t=
+        performance.now()/250;
+
+    for(let i=0;i<9;i++){
+
+        const p=
+            (t+i*.7)%5;
+
+        ctx.fillStyle=
+            "rgba(60,60,60,"+
+            Math.max(
+                .05,
+                .4-p*.07
+            )+
+            ")";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x+
+                Math.sin(t+i)*10,
+
+            y-
+                20-
+                p*13,
+
+            5+p*2,
+
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+}
+
+
+/* =========================
+   FIRE
+========================= */
+
+function drawFire(
+    x,
+    y
+){
+
+    const t=
+        performance.now()/90;
+
+    for(let i=0;i<12;i++){
+
+        const a=
+            t+i*1.7;
+
+        ctx.fillStyle=
+            i%2
+            ?"orange"
+            :"yellow";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x+
+                Math.sin(a)*18,
+
+            y-
+                18-
+                Math.abs(
+                    Math.sin(
+                        a*.7
+                    )
+                )*35,
+
+            7+
+                Math.abs(
+                    Math.sin(
+                        a*1.3
+                    )
+                )*9,
+
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+}
+
+
+/* =========================
+   EXPLOSION
+========================= */
+
+function drawExplosion(
+    x,
+    y
+){
+
+    const radius=110;
+
+    const g=
+        ctx.createRadialGradient(
+            x,
+            y,
+            0,
+            x,
+            y,
+            radius
+        );
+
+    g.addColorStop(
+        0,
+        "rgba(255,255,220,.95)"
+    );
+
+    g.addColorStop(
+        .3,
+        "rgba(255,90,0,.8)"
+    );
+
+    g.addColorStop(
+        1,
+        "rgba(80,0,0,0)"
+    );
+
+    ctx.fillStyle=g;
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y,
+        radius,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+}
+
+
+/* =========================
+   COIN DRAW
+========================= */
+
+function drawCoin(
+    x,
+    y
+){
+
+    const pulse=
+        1+
+        Math.sin(
+            performance.now()/150
+        )*.12;
+
+    ctx.save();
+
+    ctx.translate(
+        x,
+        y
+    );
+
+    ctx.scale(
+        pulse,
+        pulse
+    );
+
+    ctx.fillStyle="#ffd23c";
+    ctx.strokeStyle="#8a5b00";
+    ctx.lineWidth=3;
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        0,
+        10,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle="#8a5b00";
+
+    ctx.font=
+        "bold 12px Arial";
+
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+
+    ctx.fillText(
+        "$",
+        0,
+        1
+    );
+
+    ctx.restore();
+}
+
+
+/* =========================
+   POLICE DRAW
+========================= */
+
+function drawPolice(
+    x,
+    y,
+    scale
+){
+
+    const w=
+        48*scale;
+
+    const h=
+        78*scale;
+
+    drawCar(
+        x,
+        y,
+        w,
+        h,
+        "#eeeeee"
+    );
+
+    ctx.fillStyle="#222";
+
+    ctx.fillRect(
+        x-w*.42,
+        y-3*scale,
+        w*.84,
+        8*scale
+    );
+
+    ctx.fillStyle="#f22";
+
+    ctx.fillRect(
+        x-w*.28,
+        y-h*.42,
+        w*.25,
+        7*scale
+    );
+
+    ctx.fillStyle="#28f";
+
+    ctx.fillRect(
+        x+w*.03,
+        y-h*.42,
+        w*.25,
+        7*scale
+    );
+}
+
+
+/* =========================
+   TREES
+========================= */
+
+function drawTrees(
+    horizon
+){
+
+    for(let i=0;i<20;i++){
+
+        const y=
+            horizon+
+            20+
+            (i%7)*48;
+
+        const r=
+            getRoad(
+                Math.min(
+                    y,
+                    H
+                )
+            );
+
+        let x;
+
+        if(i%2===0){
+
+            const max=
+                Math.max(
+                    12,
+                    r.left-22
+                );
+
+            x=
+                10+
+                (
+                    (
+                        i*71+
+                        roadScroll*.06
+                    )%max
+                );
+
+        }else{
+
+            const span=
+                Math.max(
+                    12,
+                    W-r.right-22
+                );
+
+            x=
+                r.right+
+                22+
+                (
+                    (
+                        i*67+
+                        roadScroll*.06
+                    )%span
+                );
+        }
+
+
+        ctx.fillStyle="#216b35";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y-15,
+            14,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle="#65401f";
+
+        ctx.fillRect(
+            x-3,
+            y-4,
+            6,
+            24
+        );
+    }
+}
+
+
+/* =========================
+   DRAW GAME
+========================= */
+
+function draw(){
+
+    ctx.clearRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+
+    const horizon=
+        H*.34;
+
+
+    /* SKY */
+
+    const sky=
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            horizon
+        );
+
+    sky.addColorStop(
+        0,
+        "#55baf2"
+    );
+
+    sky.addColorStop(
+        1,
+        "#e8f8ff"
+    );
+
+    ctx.fillStyle=sky;
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        horizon
+    );
+
+
+    /* GRASS */
+
+    ctx.fillStyle="#3d963f";
+
+    ctx.fillRect(
+        0,
+        horizon,
+        W,
+        H-horizon
+    );
+
+
+    /* ROAD */
+
+    ctx.fillStyle="#3b3b3b";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        W*.31,
+        horizon
+    );
+
+    ctx.lineTo(
+        W*.69,
+        horizon
+    );
+
+    ctx.lineTo(
+        W*.98,
+        H
+    );
+
+    ctx.lineTo(
+        W*.02,
+        H
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /* ROAD EDGES */
+
+    ctx.strokeStyle="white";
+
+    ctx.lineWidth=4;
+
+    ctx.setLineDash([
+        25,
+        25
+    ]);
+
+    ctx.lineDashOffset=
+        -roadScroll;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        W*.31,
+        horizon
+    );
+
+    ctx.lineTo(
+        W*.02,
+        H
+    );
+
+    ctx.moveTo(
+        W*.69,
+        horizon
+    );
+
+    ctx.lineTo(
+        W*.98,
+        H
+    );
+
+    ctx.stroke();
+
+
+    /* LANE LINES */
+
+    for(let i=1;i<3;i++){
+
+        const top=
+            W*.31+
+            W*.38*(i/3);
+
+        const bottom=
+            W*.02+
+            W*.96*(i/3);
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            top,
+            horizon
+        );
+
+        ctx.lineTo(
+            bottom,
+            H
+        );
+
+        ctx.stroke();
+    }
+
+    ctx.setLineDash([]);
+
+
+    /* TREES */
+
+    drawTrees(
+        horizon
+    );
+
+
+    /* TRAFFIC */
+
+    traffic.sort(
+        (a,b)=>a.y-b.y
+    );
+
+    for(
+        const c of traffic
+    ){
+
+        if(
+            c.y<
+                horizon-40 ||
+            c.y>
+                H+100
+        )
+            continue;
+
+        const t=
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    (c.y-horizon)/
+                    (H-horizon)
+                )
+            );
+
+        const scale=
+            .55+
+            .45*t;
+
+        drawCar(
+            laneX(
+                c.y,
+                c.lane
+            ),
+            c.y,
+            38*scale,
+            64*scale,
+            c.color
+        );
+    }
+
+
+    /* COINS */
+
+    for(
+        const coin of roadCoins
+    ){
+
+        if(
+            coin.taken ||
+            coin.y<horizon-20 ||
+            coin.y>H+50
+        )
+            continue;
+
+        drawCoin(
+            laneX(
+                coin.y,
+                coin.lane
+            ),
+            coin.y
+        );
+    }
+
+
+    /* POLICE */
+
+    if(policeActive){
+
+        const py=
+            H*.76+
+            policeDistance*.45;
+
+        if(
+            py<H+100
+        ){
+
+            drawPolice(
+                laneX(
+                    Math.min(
+                        H,
+                        py
+                    ),
+                    playerLane
+                ),
+                py,
+                .8
+            );
+        }
+    }
+
+
+    /* PLAYER */
+
+    const playerY=
+        H*.76;
+
+    const playerX=
+        laneX(
+            playerY,
+            playerLane
+        );
+
+    const car=
+        cars[save.selectedCar];
+
+
+    drawCar(
+        playerX,
+        playerY,
+        46,
+        76,
+        car.color
+    );
+
+
+    if(
+        gameRunning &&
+        health<50
+    ){
+
+        drawSmoke(
+            playerX,
+            playerY
+        );
+    }
+
+
+    if(
+        !gameRunning &&
+        health<=0 &&
+        $("gameover")
+            .classList
+            .contains("show")
+    ){
+
+        drawFire(
+            playerX,
+            playerY
+        );
+
+        drawExplosion(
+            playerX,
+            playerY
+        );
+    }
+}
+
+
+/* =========================
+   GAME OVER
+========================= */
+
+function endGame(
+    title,
+    message
+){
+
+    gameRunning=false;
+
+    speed=0;
+
+    $("gameOverTitle").textContent=
+        title;
+
+    $("gameOverMessage").textContent=
+        message;
+
+    $("finalDistance").textContent=
+        Math.floor(distance);
+
+    $("gameover")
+        .classList
+        .add("show");
+}
+
+
+function retryGame(){
+
+    $("gameover")
+        .classList
+        .remove("show");
+
+    startGame();
+}
+
+
+function backToMenu(){
+
+    gameRunning=false;
+
+    $("gameover")
+        .classList
+        .remove("show");
+
+    $("hud").style.display=
+        "none";
+
+    $("hint").style.display=
+        "none";
+
+    $("controls").style.display=
+        "none";
+
+    $("mainMenu").style.display=
+        "flex";
+
+    updateCoins();
+}
+
+
+/* =========================
+   MAIN LOOP
+========================= */
+
+function loop(){
+
+    try{
+
+        update();
+        draw();
+
+    }catch(error){
+
+        console.error(
+            "GAME ERROR:",
+            error
+        );
+    }
+
+    requestAnimationFrame(
+        loop
+    );
+}
+
+
+/* =========================
+   INITIALIZE
+========================= */
+
+updateCoins();
+
+loop();
+
+</script>
+
+</body>
+</html>
