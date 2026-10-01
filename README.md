@@ -5,6 +5,8 @@ How to play?
 3. Search for .html which was downloaded earlier
 4. Click the file logo
 5. Click open with, then select Chrome or other browser
+
+
 How to play on app?
 
 1. Download .html file
